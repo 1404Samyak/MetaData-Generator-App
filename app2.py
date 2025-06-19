@@ -7,8 +7,15 @@ from PyPDF2 import PdfReader
 from docx import Document as DocxDocument
 import pytesseract
 from pdf2image import convert_from_path
-from langchain_community.llms import Ollama
-from langchain.prompts import PromptTemplate
+from langchain_groq import ChatGroq
+from langchain.schema import HumanMessage, SystemMessage
+
+# Use Groq via LangChain
+os.environ["GROQ_API_KEY"]=os.getenv("GROQ_API_KEY")
+llm = ChatGroq(
+    model="llama3-8b-8192",
+    api_key=os.getenv("GROQ_API_KEY")
+)
 
 def extract_text_from_file(uploaded_file):
     suffix = Path(uploaded_file.name).suffix.lower()
@@ -37,12 +44,8 @@ def extract_text_from_file(uploaded_file):
     os.remove(tmp_file_path)
     return text
 
-# ========== METADATA GENERATION via OLLAMA ==========
-
-llm = Ollama(model="mistral")
-
 def generate_metadata(text):
-    prompt_template = PromptTemplate.from_template("""
+    prompt = f"""
 You are a metadata assistant.
 Analyze the following document and return structured metadata in JSON format with fields:
 - title
@@ -52,11 +55,15 @@ Analyze the following document and return structured metadata in JSON format wit
 - author (if mentioned)
 - document_type (e.g., invoice, paper, legal, resume)
 Try to explain the summary in detail please
+
 Document:
-{text}
-""")
-    prompt = prompt_template.format(text=text[:3000])
-    return llm.invoke(prompt)
+{text[:3000]}
+"""
+    response = llm([
+        SystemMessage(content="You are a metadata extraction assistant."),
+        HumanMessage(content=prompt)
+    ])
+    return response.content.strip()
 
 # ========== STREAMLIT UI ========== 
 
@@ -209,7 +216,7 @@ if uploaded_file:
     with st.spinner("🧐 Extracting text from the document..."):
         raw_text = extract_text_from_file(uploaded_file)
 
-    with st.spinner("🤖 Generating metadata using Mistral via Ollama..."):
+    with st.spinner("🤖 Generating metadata using Groq via LangChain..."):
         metadata_output = generate_metadata(raw_text)
 
     st.success("✅ Metadata generated successfully!")
