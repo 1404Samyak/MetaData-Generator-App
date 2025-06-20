@@ -7,8 +7,18 @@ from PyPDF2 import PdfReader
 from docx import Document as DocxDocument
 import pytesseract
 from pdf2image import convert_from_path
-from langchain_community.llms import Ollama
-from langchain.prompts import PromptTemplate
+from langchain_groq import ChatGroq
+from langchain.schema import HumanMessage, SystemMessage
+from dotenv import load_dotenv
+load_dotenv()  
+
+
+# Use Groq via LangChain
+os.environ["GROQ_API_KEY"]=os.getenv("GROQ_API_KEY")
+llm = ChatGroq(
+    model="llama3-8b-8192",
+    api_key=os.getenv("GROQ_API_KEY")
+)
 
 def extract_text_from_file(uploaded_file):
     suffix = Path(uploaded_file.name).suffix.lower()
@@ -37,34 +47,30 @@ def extract_text_from_file(uploaded_file):
     os.remove(tmp_file_path)
     return text
 
-# ========== METADATA GENERATION via OLLAMA ==========
-
-llm = Ollama(model="mistral")
-
 def generate_metadata(text):
-    prompt_template = PromptTemplate.from_template("""
-You are a metadata assistant.
+    prompt = f"""
+You are a wonderful and best metadata assistant.
 Analyze the following document and return structured metadata in JSON format with fields:
 - title
 - summary
 - keywords
 - topics
 - author (if mentioned)
-- document_type (e.g., invoice, paper, legal, resume)
-Try to explain the summary in detail please
+- document_type 
+Try to explain the summary in detail please,and atleast 9-10 lines in a paragraph.Kindly dont miss any important points in summary
 Document:
 {text}
-""")
-    prompt = prompt_template.format(text=text[:3000])
-    return llm.invoke(prompt)
-
-# ========== STREAMLIT UI ========== 
+"""
+    response = llm([
+        SystemMessage(content="You are a metadata extraction assistant."),
+        HumanMessage(content=prompt)
+    ])
+    return response.content.strip()
 
 st.set_page_config(page_title="📄 AI Metadata Generator", layout="wide")
 
 st.markdown("""
     <style>
-    /* ====== Global Styles ====== */
 body, .main {
     background: linear-gradient(120deg, #e0f7fa 0%, #f8f9fa 100%);
     min-height: 100vh;
@@ -197,6 +203,51 @@ button:hover, .stButton > button:hover {
         font-size: 2rem;
     }
 }
+/* ====== Bottom Bar / Footer ====== */
+.bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    background: linear-gradient(90deg, #00b4d8 0%, #48cae4 100%);
+    color: #fff;
+    font-size: 1.08rem;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.8rem 2.5vw;
+    box-shadow: 0 -2px 16px rgba(0, 180, 216, 0.05);
+    z-index: 9999;
+    animation: slideUp 0.7s cubic-bezier(.4,0,.2,1);
+}
+
+.bottom-bar a {
+    color: #fff;
+    text-decoration: underline;
+    margin-left: 1.2em;
+    transition: color 0.2s;
+}
+.bottom-bar a:hover {
+    color: #caf0f8;
+}
+
+@media (max-width: 700px) {
+    .bottom-bar {
+        flex-direction: column;
+        font-size: 0.98rem;
+        padding: 1rem 0.5rem;
+        text-align: center;
+        gap: 0.5em;
+    }
+}
+
+@keyframes slideUp {
+    0% { transform: translateY(60px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+
 
     </style>
 """, unsafe_allow_html=True)
@@ -209,7 +260,7 @@ if uploaded_file:
     with st.spinner("🧐 Extracting text from the document..."):
         raw_text = extract_text_from_file(uploaded_file)
 
-    with st.spinner("🤖 Generating metadata using Mistral via Ollama..."):
+    with st.spinner("🤖 Generating metadata using Groq via LangChain..."):
         metadata_output = generate_metadata(raw_text)
 
     st.success("✅ Metadata generated successfully!")
