@@ -64,8 +64,8 @@ A modern Streamlit web app for uploading PDF, DOCX, or TXT files, extracting tex
 ## 🔑 Setup
 
 1. **Set your Groq API key** in a `.env` file:
-GROQ_API_KEY=your_groq_api_key_here
+    - GROQ_API_KEY=your_groq_api_key_here
 
 
 2. **Run the app:**
-streamlit run app.py
+    - streamlit run app.py
