@@ -1,0 +1,55 @@
+nth_super_ugly_number:
+  problem:
+    description: >
+      Find the nth super ugly number, where a super ugly number is a positive integer 
+      whose prime factors are only from the given list `primes`.
+
+    input:
+      n: The index (1-based) of the super ugly number to return.
+      primes: A list of prime numbers used to generate super ugly numbers.
+
+    output:
+      dp[n]: The nth super ugly number.
+
+  definitions:
+    dp[i]: >
+      The i-th super ugly number, where:
+      - dp[1] is initialized to 1 (the first super ugly number),
+      - dp[i] is built using previously computed dp values and the prime list.
+
+    a[j]: >
+      The index pointer for each prime number `primes[j]`, initially pointing to dp[1].
+      - It tracks which multiple of a given prime to consider next.
+
+  approach:
+    type: Dynamic Programming (with multiple moving pointers)
+    steps:
+      - Initialize `dp` as a vector of size (n+1), with dp[1] = 1.
+      - Initialize an index pointer array `a` of size m (number of primes), all set to 1.
+      - For each i from 2 to n:
+        - Set val = infinity.
+        - For each prime:
+          - Compute `dp[a[j]] * primes[j]`, and keep track of the minimum of all.
+        - Set dp[i] = min value found.
+        - For each prime again:
+          - If the product equals dp[i], increment the respective pointer a[j] to avoid duplicates.
+
+  explanation:
+    - At every step, you are trying to generate the next smallest number 
+      whose prime divisors are limited to the provided list `primes`.
+    - You generate the next candidates by multiplying previous dp values with each prime.
+    - The multiple pointers ensure you avoid recomputing duplicate values 
+      and efficiently progress each sequence.
+    - The result is always increasing, and duplicates are prevented by the condition 
+      `if dp[a[j]] * primes[j] == dp[i]`.
+
+  complexity:
+    time: O(n * k), where k is the number of primes.
+    space: O(n + k), for storing the dp array and pointer list.
+
+  output:
+    return_value: dp[n]
+
+  notes:
+    - Use of `1LL` ensures multiplication stays in long long to avoid integer overflow.
+    - Final result is cast to int before returning, since the result fits in 32-bit int.
