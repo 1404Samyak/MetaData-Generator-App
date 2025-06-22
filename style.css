@@ -7,7 +7,6 @@ body, .main {
     padding: 0;
 }
 
-/* ====== App Container ====== */
 .stApp {
     background: transparent;
     min-height: 100vh;
@@ -18,7 +17,6 @@ body, .main {
     animation: fadeIn 1.2s cubic-bezier(.4,0,.2,1);
 }
 
-/* ====== Title ====== */
 .stTitle > h1 {
     font-size: 2.8rem;
     font-weight: 800;
@@ -33,7 +31,6 @@ body, .main {
     filter: drop-shadow(0 2px 8px #48cae4aa);
 }
 
-/* ====== Card Style ====== */
 .css-1aumxhk {
     background: #ffffffcc;
     border-radius: 18px;
@@ -48,13 +45,14 @@ body, .main {
     transform: translateY(-6px) scale(1.03) rotate(-1deg);
 }
 
-/* ====== Scrollable JSON Box ====== */
 .scrollable-json {
-    max-height: 400px;         /* Limit vertical height */
-    overflow-y: auto;          /* Enable vertical scroll */
-    overflow-x: hidden;        /* Prevent horizontal scroll */
-    white-space: pre-wrap;     /* Wrap long lines instead of scrolling horizontally */
-    word-wrap: break-word;     /* Break long words if necessary */
+    max-height: 400px;             /* Vertical height limit */
+    overflow-y: auto;              /* Enable vertical scroll */
+    overflow-x: hidden;            /* Disable horizontal scroll */
+    
+    white-space: pre-wrap;         /* Wrap lines properly */
+    word-break: break-word;        /* Break long words */
+    word-wrap: break-word;         /* Support older browsers */
     
     background: #f1f8fb;
     border-radius: 8px;
@@ -68,13 +66,12 @@ body, .main {
     animation: fadeIn 1.2s cubic-bezier(.4,0,.2,1);
 }
 
+
 .scrollable-json:hover {
     background: #e0f7fa;
     box-shadow: 0 4px 18px rgba(0, 180, 216, 0.13);
 }
 
-
-/* ====== File Upload Button ====== */
 input[type="file"]::-webkit-file-upload-button {
     background: linear-gradient(90deg, #00b4d8, #48cae4);
     color: #fff;
@@ -94,7 +91,6 @@ input[type="file"]::-webkit-file-upload-button:hover {
     box-shadow: 0 4px 16px rgba(0, 180, 216, 0.18);
 }
 
-/* ====== Animated Submit Button ====== */
 button, .stButton > button {
     position: relative;
     overflow: hidden;
@@ -135,7 +131,6 @@ button:hover, .stButton > button:hover {
     box-shadow: 0 4px 16px rgba(0, 180, 216, 0.18);
 }
 
-/* ====== Bottom Bar / Footer ====== */
 .bottom-bar {
     position: fixed;
     bottom: 0;
@@ -185,7 +180,6 @@ button:hover, .stButton > button:hover {
     }
 }
 
-/* ====== Animations ====== */
 @keyframes fadeIn {
     0% { opacity: 0; }
     100% { opacity: 1; }

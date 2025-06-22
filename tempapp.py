@@ -14,11 +14,9 @@ import io
 import fitz  
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
-# Load environment
 load_dotenv()
 os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
 
-# Set LLM
 llm = ChatGroq(
     model="llama3-8b-8192",
     api_key=os.getenv("GROQ_API_KEY")
@@ -96,9 +94,9 @@ def generate_metadata(text):
     prompt = f"""
 You are a professional and wonderful metadata assistant.
 
-Analyze the following document and return structured metadata in JSON format with fields:
+Analyze the following document,idenitfy and leverage most meaningful sections of document and return structured metadata in JSON format with fields:
 - title
-- summary (at least 10 lines in detail coverig all important points of document)
+- summary (at least 10-15 lines in detail covering all important points of document)
 - keywords (comma-separated)
 - topics (broad subject categories)
 - author (if mentioned)
@@ -121,10 +119,10 @@ def summarize_ocr_text(ocr_text):
         "You are a professional assistant. "
         "Summarize the following OCR-extracted content in a clear, well-organized, and visually appealing markdown format. "
         "Your summary should include:\n"
-        "- **A short title or heading** for the content\n"
-        "- **Key points or highlights** as a bullet list\n"
-        "- **Detected names, dates, numbers, or keywords** (if any)\n"
-        "- **A concise paragraph** summarizing the main idea or purpose\n"
+        "- A short title or heading** for the content\n"
+        "- Key points or highlights** as a bullet list\n"
+        "- Detected names, dates, numbers, or keywords** (if any)\n"
+        "- A concise paragraph** summarizing the main idea or purpose\n"
         "If the content is a graph or chart, explain axes and key trends. "
         "If it's a table, highlight main comparisons or figures. "
         "If it's a scanned paragraph, summarize the main idea. "
@@ -140,6 +138,17 @@ def summarize_ocr_text(ocr_text):
 
 st.set_page_config(page_title="📄 AI Metadata Generator", layout="wide")
 st.title("📄 AI Metadata Generator")
+
+st.markdown("""
+<div style='background-color:#f0f2f6; padding: 1em; border-radius: 10px; margin-bottom:1em;'>
+    <h3>👋 Welcome to the AI Metadata & Image Summarizer!</h3>
+    <ul>
+        <li>Upload a <b>PDF, DOCX, or TXT</b> file.</li>
+        <li>See extracted text, metadata, and smart summaries of all images.</li>
+        <li>Download your results instantly.</li>
+    </ul>
+</div>
+""", unsafe_allow_html=True)
 
 with open("style.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
@@ -178,12 +187,18 @@ if uploaded_file:
     if images:
         st.subheader("🖼️ Inline Image Summaries")
         for idx, img in enumerate(images):
-            # st.image(img, caption=f"Image {idx+1}", use_column_width=True)
-            ocr_img_text = ocr_texts_per_image[idx] if idx < len(ocr_texts_per_image) else ""
-            if ocr_img_text.strip():
-                with st.spinner(f"Summarizing OCR text for Image {idx+1}..."):
-                    summary = summarize_ocr_text(ocr_img_text)
-                st.markdown(summary, unsafe_allow_html=True)
+            st.markdown(f"---\n### 🖼️ Image {idx+1}")
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                st.image(img, caption=f"Image {idx+1}", use_container_width=True)
+            with col2:
+                ocr_img_text = ocr_texts_per_image[idx] if idx < len(ocr_texts_per_image) else ""
+                if ocr_img_text.strip():
+                    with st.spinner(f"Summarizing OCR text for Image {idx+1}..."):
+                        summary = summarize_ocr_text(ocr_img_text)
+                    st.markdown(summary, unsafe_allow_html=True)
+                with st.expander("Show Raw OCR Text"):
+                    st.code(ocr_img_text)
 
     if ocr_text.strip():
         with st.spinner("📝 Summarizing all inline image OCR text..."):
@@ -191,9 +206,6 @@ if uploaded_file:
 
         st.subheader("📝 Inline Image OCR Text Summary")
         st.markdown(f"<div class='scrollable-json'><pre>{ocr_summary}</pre></div>", unsafe_allow_html=True)
-        
-    else:
-        st.info('No inline images present in the document')
 
 else:
     st.info("📂 Please upload a file to get started.")
