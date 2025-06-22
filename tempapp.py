@@ -47,7 +47,7 @@ def extract_text_and_inline_images(uploaded_file):
             for page in pdf_doc:
                 images = page.get_images(full=False)
                 for img in images:
-                    xref = img[0]
+                    xref = img
                     base_image = pdf_doc.extract_image(xref)
                     image_data = base_image["image"]
                     image = Image.open(io.BytesIO(image_data)).convert("RGB")
@@ -93,15 +93,14 @@ def extract_text_and_inline_images(uploaded_file):
 def generate_metadata(text):
     prompt = f"""
 You are a professional and wonderful metadata assistant.
-
 Analyze the following document,idenitfy and leverage most meaningful sections of document and return structured metadata in JSON format with fields:
 - title
-- summary (at least 10-15 lines in detail covering all important points of document)
+- summary (at least 15-20 lines in detail covering all important points of document)
 - keywords (comma-separated)
 - topics (broad subject categories)
 - author (if mentioned)
 - document_type
-
+-At end only rewrite the detailed summary(15-20 lines) so that user can see the summary alone.
 Document Content:
 {text.strip()}
 """
@@ -117,16 +116,18 @@ def summarize_ocr_text(ocr_text):
 
     prompt = (
         "You are a professional assistant. "
-        "Summarize the following OCR-extracted content in a clear, well-organized, and visually appealing markdown format. "
+        "Start your response with 'The following image ...'. "
+        "Summarize the following OCR-extracted content in a clear, well-organized, and visually appealing markdown format in about 5-10 lines "
         "Your summary should include:\n"
-        "- A short title or heading** for the content\n"
-        "- Key points or highlights** as a bullet list\n"
-        "- Detected names, dates, numbers, or keywords** (if any)\n"
-        "- A concise paragraph** summarizing the main idea or purpose\n"
+        "- A short title or heading for the content\n"
+        "- Key points or highlights as a bullet list\n"
+        "- Detected names, dates, numbers, or keywords (if any)\n"
+        "- A concise paragraph summarizing the main idea or purpose\n"
         "If the content is a graph or chart, explain axes and key trends. "
         "If it's a table, highlight main comparisons or figures. "
         "If it's a scanned paragraph, summarize the main idea. "
         "Avoid assumptions. If content is unclear, mention it.\n\n"
+        "If it's none of the above, just describe the content of picture, background, etc.\n"
         f"OCR Text:\n{ocr_text}"
     )
 
@@ -176,7 +177,6 @@ if uploaded_file:
         formatted_json = metadata_output
 
     st.markdown(f"""<div class='scrollable-json'><pre>{formatted_json}</pre></div>""", unsafe_allow_html=True)
-
     st.download_button(
         label="⬇️ Download Metadata as JSON",
         data=formatted_json,
@@ -187,25 +187,18 @@ if uploaded_file:
     if images:
         st.subheader("🖼️ Inline Image Summaries")
         for idx, img in enumerate(images):
-            st.markdown(f"---\n### 🖼️ Image {idx+1}")
-            col1, col2 = st.columns([1, 2])
-            with col1:
-                st.image(img, caption=f"Image {idx+1}", use_container_width=True)
-            with col2:
-                ocr_img_text = ocr_texts_per_image[idx] if idx < len(ocr_texts_per_image) else ""
-                if ocr_img_text.strip():
+            ocr_img_text = ocr_texts_per_image[idx] if idx < len(ocr_texts_per_image) else ""
+            if ocr_img_text.strip():
+                st.markdown(f"---\n### 🖼️ Image {idx+1}")
+                col1, col2 = st.columns([1, 2])
+                with col1:
+                    st.image(img, caption=f"Image {idx+1}", use_container_width=True)
+                with col2:
                     with st.spinner(f"Summarizing OCR text for Image {idx+1}..."):
                         summary = summarize_ocr_text(ocr_img_text)
-                    st.markdown(summary, unsafe_allow_html=True)
-                with st.expander("Show Raw OCR Text"):
-                    st.code(ocr_img_text)
-
-    if ocr_text.strip():
-        with st.spinner("📝 Summarizing all inline image OCR text..."):
-            ocr_summary = summarize_ocr_text(ocr_text)
-
-        st.subheader("📝 Inline Image OCR Text Summary")
-        st.markdown(f"<div class='scrollable-json'><pre>{ocr_summary}</pre></div>", unsafe_allow_html=True)
+                    st.markdown(f"<div class='summary-box'>{summary}</div>", unsafe_allow_html=True)
+                    with st.expander("Show Raw OCR Text"):
+                        st.code(ocr_img_text)
 
 else:
     st.info("📂 Please upload a file to get started.")
