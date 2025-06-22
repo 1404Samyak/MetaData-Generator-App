@@ -47,7 +47,7 @@ def extract_text_and_inline_images(uploaded_file):
             for page in pdf_doc:
                 images = page.get_images(full=False)
                 for img in images:
-                    xref = img
+                    xref = img[0]
                     base_image = pdf_doc.extract_image(xref)
                     image_data = base_image["image"]
                     image = Image.open(io.BytesIO(image_data)).convert("RGB")
