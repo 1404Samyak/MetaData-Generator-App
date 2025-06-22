@@ -69,3 +69,56 @@ A modern Streamlit web app for uploading PDF, DOCX, or TXT files, extracting tex
 
 2. **Run the app:**
     - streamlit run app.py
+
+
+3. **Open your browser** to the provided local URL.
+
+---
+
+## 📝 How It Works
+
+1. **Upload a file** (PDF, DOCX, or TXT).
+2. **Text and inline images** are extracted.
+3. **OCR** is performed on each image to extract any text (if present).
+4. **LLM** generates structured metadata and detailed summaries.
+5. **Results** (metadata and image summaries) are shown in a modern UI, with download options.
+
+---
+
+## 🎨 UI & Custom Styling
+
+- The app uses a `style.css` file for custom UI enhancements.
+- Image summaries are displayed in visually distinct boxes beside each image for clarity and appeal.
+
+---
+
+## 💡 Notes
+
+- Only images with non-empty OCR text are displayed and summarized.
+- Summaries for each image start with “The following image ...” for clarity.
+- The app is designed for easy extension and customization.
+
+---
+
+## 📂 Example `.env`
+
+- GROQ_API_KEY=your_groq_api_key_here
+
+
+---
+
+## 📜 License
+
+MIT License (or your preferred license)
+
+---
+
+## 👤 Author
+
+Your Name – [your.email@example.com](mailto:your.email@example.com)
+
+---
+
+**Enjoy smarter document review and metadata extraction!**
+
+
