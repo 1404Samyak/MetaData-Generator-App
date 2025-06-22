@@ -95,12 +95,12 @@ def generate_metadata(text):
 You are a professional and wonderful metadata assistant.
 Analyze the following document,idenitfy and leverage most meaningful sections of document and return structured metadata in JSON format with fields:
 - title
-- summary (at least 15-20 lines in detail covering all important points of document)
-- keywords (comma-separated)
-- topics (broad subject categories)
+- summary (at least 15-20 lines in detail covering all meaningful sections of document)
+- Meaningful and important keywords (comma-separated)
+- Meaningful and important topics (broad subject categories)
 - author (if mentioned)
 - document_type
--At end only rewrite the detailed summary(15-20 lines) so that user can see the summary alone.
+-At end only rewrite the detailed summary(20-30 lines) without missing ay important sections of document so that user can see the summary alone.But dont write in the structured metadata write separately please
 Document Content:
 {text.strip()}
 """

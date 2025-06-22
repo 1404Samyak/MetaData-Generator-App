@@ -53,3 +53,5 @@ nth_super_ugly_number:
   notes:
     - Use of `1LL` ensures multiplication stays in long long to avoid integer overflow.
     - Final result is cast to int before returning, since the result fits in 32-bit int.
+
+AUTHOR: Dean Hujisen
