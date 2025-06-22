@@ -20,7 +20,6 @@ A modern Streamlit web app for uploading PDF, DOCX, or TXT files, extracting tex
 
 - Python 3.8+
 - [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) (must be installed and the path set)
-- [Poppler](http://blog.alivate.com.au/poppler-windows/) (for PDF image extraction, if running on Windows)
 - Groq API key
 
 ---
@@ -54,10 +53,6 @@ A modern Streamlit web app for uploading PDF, DOCX, or TXT files, extracting tex
 **Install Tesseract:**
 - [Tesseract Download](https://github.com/tesseract-ocr/tesseract)
 - Set the path in your script if needed.
-
-**Install Poppler (for Windows):**
-- [Poppler Download](http://blog.alivate.com.au/poppler-windows/)
-- Add Poppler's `bin` folder to your PATH.
 
 ---
 
@@ -115,7 +110,7 @@ MIT License (or your preferred license)
 
 ## 👤 Author
 
-Your Name – [your.email@example.com](mailto:your.email@example.com)
+Your Name – [samyak_m@ece.iitr.ac.in](mailto:your.email@example.com)
 
 ---
 
