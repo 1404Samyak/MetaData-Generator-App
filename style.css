@@ -50,7 +50,12 @@ body, .main {
 
 /* ====== Scrollable JSON Box ====== */
 .scrollable-json {
-    overflow-x: auto;
+    max-height: 400px;         /* Limit vertical height */
+    overflow-y: auto;          /* Enable vertical scroll */
+    overflow-x: hidden;        /* Prevent horizontal scroll */
+    white-space: pre-wrap;     /* Wrap long lines instead of scrolling horizontally */
+    word-wrap: break-word;     /* Break long words if necessary */
+    
     background: #f1f8fb;
     border-radius: 8px;
     padding: 1.2rem;
@@ -62,10 +67,12 @@ body, .main {
     transition: background 0.3s, box-shadow 0.3s;
     animation: fadeIn 1.2s cubic-bezier(.4,0,.2,1);
 }
+
 .scrollable-json:hover {
     background: #e0f7fa;
     box-shadow: 0 4px 18px rgba(0, 180, 216, 0.13);
 }
+
 
 /* ====== File Upload Button ====== */
 input[type="file"]::-webkit-file-upload-button {
