@@ -8,20 +8,18 @@ from docx import Document as DocxDocument
 import pytesseract
 from pdf2image import convert_from_path
 from langchain_groq import ChatGroq
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain.schema import HumanMessage, SystemMessage
 from dotenv import load_dotenv
-from docx.opc.constants import RELATIONSHIP_TYPE as RT
 from PIL import Image
 import io
+from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
 load_dotenv()
-
 os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
 llm = ChatGroq(
     model="llama3-8b-8192",
     api_key=os.getenv("GROQ_API_KEY")
 )
-
 pytesseract.pytesseract.tesseract_cmd = r"C:\\Program Files\\Tesseract-OCR\\tesseract.exe"
 
 def extract_text_and_images(uploaded_file):
@@ -60,6 +58,7 @@ def extract_text_and_images(uploaded_file):
         elif suffix == ".txt":
             with open(tmp_file_path, "r", encoding="utf-8") as f:
                 text = f.read()
+
         else:
             text = f"Unsupported file type: {suffix}"
 
@@ -72,20 +71,11 @@ def extract_text_and_images(uploaded_file):
         "images": image_list
     }
 
-def generate_metadata(text, ocr_text=""):
-    combined_text = f"""
-The following document contains both extracted text and OCR text from images.
-
---- Extracted Text ---
-{text.strip()}
-
---- OCR Extracted Text from Images ---
-{ocr_text.strip()}
-"""
+def generate_metadata(text):
     prompt = f"""
 You are a professional metadata assistant.
 
-Analyze the following combined document content and return structured metadata in JSON format with fields:
+Analyze the following document and return structured metadata in JSON format with fields:
 - title
 - summary (at least 9–10 lines in detail)
 - keywords (comma-separated)
@@ -93,10 +83,8 @@ Analyze the following combined document content and return structured metadata i
 - author (if mentioned)
 - document_type (e.g., research paper, report, article, etc.)
 
-Do not miss any important information from the document or image text.
-
-Combined Content:
-{combined_text}
+Document Content:
+{text.strip()}
 """
     response = llm([
         SystemMessage(content="You are a metadata extraction assistant."),
@@ -104,22 +92,44 @@ Combined Content:
     ])
     return response.content.strip()
 
-# Streamlit UI setup
+def summarize_ocr_text(ocr_text):
+    if not ocr_text.strip():
+        return "No OCR content found to summarize."
+
+    prompt = f"""
+You are a helpful assistant.
+
+Summarize the following OCR-extracted text in a clear and meaningful paragraph. 
+If it's a graph or chart, explain what the axes represent and describe key trends or patterns. 
+If it's a table, highlight the main comparisons or figures. 
+If it's a scanned paragraph, summarize the main idea, important names, numbers, or keywords. 
+Avoid assumptions and mention if any content is unclear.
+
+OCR Text:
+{ocr_text}
+"""
+    response = llm([
+        SystemMessage(content="You summarize OCR-extracted content."),
+        HumanMessage(content=prompt)
+    ])
+    return response.content.strip()
+
 st.set_page_config(page_title="📄 AI Metadata Generator", layout="wide")
-
-# Retain original CSS styles
-st.markdown(open("style.css").read(), unsafe_allow_html=True)
-
 st.title("📄 AI Metadata Generator")
 
-uploaded_file = st.file_uploader("📄 Upload a document (PDF, DOCX, TXT)", type=["pdf", "docx", "txt"])
+with open("style.css") as f:
+    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader("📤 Upload a document (PDF, DOCX, TXT)", type=["pdf", "docx", "txt"])
 
 if uploaded_file:
-    with st.spinner("😮 Extracting text from the document..."):
+    with st.spinner("🧐 Extracting text from the document..."):
         raw = extract_text_and_images(uploaded_file)
+        extracted_text = raw["text"]
+        ocr_text = raw["ocr_text"]
 
     with st.spinner("🤖 Generating metadata using Groq via LangChain..."):
-        metadata_output = generate_metadata(raw["text"], raw["ocr_text"])
+        metadata_output = generate_metadata(extracted_text)
 
     st.success("✅ Metadata generated successfully!")
     st.subheader("📌 Extracted Metadata")
@@ -138,5 +148,16 @@ if uploaded_file:
         file_name="metadata_output.json",
         mime="application/json"
     )
+
+    if ocr_text.strip():
+        # st.subheader("🖼️ OCR Extracted Text from Document Images")
+        # st.text_area("OCR Text", value=ocr_text.strip(), height=300)
+
+        with st.spinner("📝 Summarizing OCR text..."):
+            ocr_summary = summarize_ocr_text(ocr_text)
+
+        st.subheader("📝 OCR Text Summary")
+        st.markdown(f"<div class='scrollable-json'>{ocr_summary}</div>", unsafe_allow_html=True)
+
 else:
     st.info("📂 Please upload a file to get started.")
