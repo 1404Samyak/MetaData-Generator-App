@@ -49,3 +49,23 @@ A modern Streamlit web app for uploading PDF, DOCX, or TXT files, extracting tex
 
 # Install Python dependencies
     - pip install -r requirements.txt
+
+
+**Install Tesseract:**
+- [Tesseract Download](https://github.com/tesseract-ocr/tesseract)
+- Set the path in your script if needed.
+
+**Install Poppler (for Windows):**
+- [Poppler Download](http://blog.alivate.com.au/poppler-windows/)
+- Add Poppler's `bin` folder to your PATH.
+
+---
+
+## 🔑 Setup
+
+1. **Set your Groq API key** in a `.env` file:
+GROQ_API_KEY=your_groq_api_key_here
+
+
+2. **Run the app:**
+streamlit run app.py
