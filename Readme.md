@@ -114,7 +114,7 @@ A cutting-edge Streamlit web application that enables users to effortlessly uplo
 
 ## 📜 License
 
-MIT License (or your preferred license)
+MIT License
 
 ---
 
