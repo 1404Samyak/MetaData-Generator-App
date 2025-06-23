@@ -1,6 +1,6 @@
 # 📄 AI Metadata & Image Summarizer
 
-A modern Streamlit web app that lets you upload PDF, DOCX, or TXT files, automatically extracts text and inline images, performs OCR on images, and uses Groq's LLM (LLama3) to generate rich metadata and visually appealing, smart summaries for each image.
+A cutting-edge Streamlit web application that enables users to effortlessly upload PDF, DOCX, or TXT documents, automatically extracting both textual content and embedded inline images. The app performs OCR on extracted images to uncover any text they contain and leverages Groq’s powerful LLM (LLama3) to generate comprehensive, structured metadata along with visually rich, context-aware summaries for each image. This seamless integration of document processing, OCR, and generative AI delivers an intuitive and efficient experience for detailed document analysis and review.
 
 ---
 
@@ -87,16 +87,21 @@ A modern Streamlit web app that lets you upload PDF, DOCX, or TXT files, automat
 
 ## 🎨 UI & Custom Styling
 
-- The app uses a `style.css` file for custom UI enhancements.
-- Image summaries are displayed in visually distinct boxes beside each image for clarity and appeal.
+- The app incorporates a custom style.css file to enhance the overall look and feel, ensuring a modern and cohesive user experience.
+
+- Each image summary is presented in a visually distinct, styled box positioned beside its corresponding image, making it easy to compare visuals and insights at a glance.
+
+- Clean layouts, intuitive navigation, and subtle visual accents help users focus on the content and results, providing both clarity and aesthetic appeal throughout the application.
 
 ---
 
 ## 💡 Notes
 
-- Only images with non-empty OCR text are displayed and summarized.
-- Summaries for each image start with “The following image ...” for clarity.
-- The app is designed for easy extension and customization.
+- Only images containing meaningful OCR-extracted text are displayed and summarized, ensuring that users see relevant insights without unnecessary clutter.
+
+- Each image summary begins with the phrase “The following image ...” to provide clear context and improve readability.
+
+- The app’s modular design and clean codebase make it straightforward to extend or customize features, allowing for easy adaptation to evolving user needs or integration with additional AI services.
 
 ---
 
