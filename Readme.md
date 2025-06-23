@@ -114,7 +114,12 @@ A cutting-edge Streamlit web application that enables users to effortlessly uplo
 
 ## 📜 License
 
-MIT License
+- This project is licensed under the MIT License.
+
+- You are free to use, copy, modify, and distribute this software for any purpose, with or without changes, as long as you include the original copyright notice.
+The software is provided “as is,” without warranty of any kind.
+
+- Copyright (c) 2025 Mars Club
 
 ---
 
