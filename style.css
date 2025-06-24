@@ -46,23 +46,23 @@ body, .main {
 }
 
 .scrollable-json {
-    max-height: 400px;             /* Vertical height limit */
-    overflow-y: auto;              /* Enable vertical scroll */
-    overflow-x: hidden;            /* Disable horizontal scroll */
-    
-    white-space: pre-wrap;         /* Wrap lines properly */
-    word-break: break-word;        /* Break long words */
-    word-wrap: break-word;         /* Support older browsers */
-    
-    background: #1e1e1e;           /* Dark background */
-    color: #f5f5f5;                /* Light text */
-    
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+    word-wrap: break-word;
+
+    background: #1e1e1e;
+    color: #f5f5f5;
+
     border-radius: 8px;
     padding: 1.2rem;
     margin: 1rem 0;
     font-family: 'Fira Mono', 'Consolas', monospace;
     font-size: 1.05rem;
-    
+
     box-shadow: 0 1px 4px rgba(255, 255, 255, 0.05);
     transition: background 0.3s, box-shadow 0.3s;
     animation: fadeIn 1.2s cubic-bezier(.4,0,.2,1);
