@@ -1,6 +1,6 @@
 # 📄 AI Metadata Generator with Groq Llama 3.3 70B Versatile model
 
-A Streamlit app to **extract, summarize, and generate structured metadata** from PDF, DOCX, and TXT documents using the Groq Llama-3.3-70B-Versatile model. The app also extracts and summarizes text from inline images using OCR.
+A Streamlit app to **extract, summarize, and generate structured metadata from PDF, DOCX, and TXT documents** using the Groq Llama-3.3-70B-Versatile model. The app also extracts and summarizes text from inline images using OCR. Note that OCR image extraction is only possible for DOCX and PDF files, as it is not possible to have images in TXT files.
 
 ---
 
