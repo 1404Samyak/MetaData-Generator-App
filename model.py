@@ -212,7 +212,7 @@ if uploaded_file:
         formatted_json = metadata_output
 
     st.markdown(f"""<div class='scrollable-json'><pre>{formatted_json}</pre></div>""", unsafe_allow_html=True)
-    st.markdown(f"""<div class='scrollable-json'><pre>{summarized_text}</pre></div>""", unsafe_allow_html=True)
+    st.markdown(f"""<div class='scrollable-json-2'><pre>{summarized_text}</pre></div>""", unsafe_allow_html=True)
     st.download_button(
         label="⬇️ Download Metadata as JSON",
         data=formatted_json,
