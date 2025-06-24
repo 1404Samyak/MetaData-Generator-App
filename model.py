@@ -132,7 +132,7 @@ Analyze the following document summary and return structured metadata in JSON fo
 - topics (broad subject categories)
 - author (if mentioned)
 - document_type
--In json format make the keys bold to distinguish between keys and its values.
+-In JSON format write the keys in black and its corresponding text in white to distinguish properly.
 Document Summary:
 {summarized_text}
 """
@@ -163,7 +163,6 @@ def summarize_ocr_text(ocr_text):
         "If it's a table, highlight main comparisons or figures. "
         "If it's a scanned paragraph, summarize the main idea. "
         "Avoid assumptions. If content is unclear, mention it.\n\n"
-        "If it's none of the above, just describe the content of picture, background, etc.\n"
         f"OCR Text:\n{ocr_text}"
     )
     try:
@@ -180,7 +179,7 @@ st.title("📄 AI Metadata Generator with Groq")
 
 st.markdown("""
 <div style='background-color:#f0f2f6; padding: 1em; border-radius: 10px; margin-bottom:1em;'>
-    <h3>Upload a document (PDF, DOCX, or TXT) and generate structured metadata using Groq Llama 3.3 70B Versatile. OCR images are summarized separately.</h3>
+    <h3>Upload a document (PDF, DOCX, or TXT) and generate structured metadata using Groq model. OCR images are summarized separately.</h3>
 </div>
 """, unsafe_allow_html=True)
 

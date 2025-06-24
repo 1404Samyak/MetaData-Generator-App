@@ -1,132 +1,149 @@
-# 📄 AI Metadata & Image Summarizer
+# 📄 AI Metadata Generator with Groq Llama 3.3 70B Versatile
 
-A cutting-edge Streamlit web application that enables users to effortlessly upload PDF, DOCX, or TXT documents, automatically extracting both textual content and embedded inline images. The app performs OCR on extracted images to uncover any text they contain and leverages Groq’s powerful LLM (LLama3) to generate comprehensive, structured metadata along with visually rich, context-aware summaries for each image. This seamless integration of document processing, OCR, and generative AI delivers an intuitive and efficient experience for detailed document analysis and review.
+A Streamlit app to **extract, summarize, and generate structured metadata** from PDF, DOCX, and TXT documents using the Groq Llama-3.3-70B-Versatile model. The app also extracts and summarizes text from inline images using OCR.
 
 ---
 
 ## 🚀 Features
 
-- **Upload** PDF, DOCX, or TXT files
-- **Extracts** all text and inline (embedded) images
-- **Performs OCR** on images to extract any text present
-- **LLM-powered metadata extraction** (title, summary, keywords, topics, author, type)
-- **Smart, markdown-formatted summaries** for each image
-- **Download metadata as JSON**
-- **Modern, user-friendly Streamlit interface**
+- **Document Upload:** Supports PDF, DOCX, and TXT files.
+- **Text Extraction:** Extracts all text from uploaded documents.
+- **Image Extraction & OCR:** Extracts inline images and runs OCR (Optical Character Recognition) to get text from images.
+- **Hierarchical Summarization:** Summarizes large documents chunk-by-chunk, then combines and further summarizes to fit within model token limits.
+- **Metadata Generation:** Produces detailed, structured metadata (title, summary, keywords, topics, author, document type) using the document summary.
+- **Image OCR Summarization:** Each extracted image's OCR text is summarized in a clear, markdown-formatted style.
+- **Downloadable Metadata:** Download the generated metadata as a JSON file.
+- **Modern UI:** Clean, wide-layout Streamlit interface with custom CSS support.
 
 ---
 
-## 🛠️ Requirements
+## 🛠️ Required Packages
 
-- **Python** 3.8+
-- **Tesseract OCR** (must be installed and the path set)
-    - [Tesseract Download](https://github.com/tesseract-ocr/tesseract)
-- **Groq API key** for LLM access
+Install all dependencies with:
 
----
+    - pip install streamlit python-dotenv PyPDF2 python-docx pytesseract pillow pymupdf langchain-groq
 
-## 📦 Key Python Packages
 
-| Package                | Purpose                                      |
-|------------------------|----------------------------------------------|
-| streamlit              | Web app framework                            |
-| os, tempfile, io, json, pathlib | File handling                     |
-| PyPDF2                 | PDF text extraction                          |
-| python-docx            | DOCX text/image extraction                   |
-| pytesseract            | OCR on images                                |
-| langchain_groq         | LLM API integration (LLama3 via Groq)        |
-| langchain.schema       | LLM message formatting                       |
-| dotenv                 | Loads API keys from `.env`                   |
-| Pillow (PIL)           | Image processing                             |
-| fitz (PyMuPDF)         | Extracts inline images from PDF              |
-| docx.opc.constants     | DOCX image relationship constants            |
+**Additional requirements:**
+- [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) must be installed and available on your system path.
+- A valid Groq API key (set as `GROQ_API_KEY` in your `.env` file).
 
 ---
 
-## ⚡ Installation
-
-# Clone the repository
-    - git clone https://github.com/yourusername/ai-metadata-summarizer.git
-    - cd ai-metadata-summarizer
-
-# Install Python dependencies
-    - pip install -r requirements.txt
-
-
-**Install Tesseract:**
-- Download and install from [here](https://github.com/tesseract-ocr/tesseract)
-- Set the path in your script if needed (see code).
-
----
-
-## 🔑 Setup
-
-1. **Create a `.env` file** in the project root with your Groq API key:
-    ```
-    GROQ_API_KEY=your_groq_api_key_here
-    ```
-
-2. **Run the app:**
-    ```
-    streamlit run app.py
-    ```
-
-3. **Open your browser** to the local URL provided by Streamlit.
-
----
-
-## 📝 How It Works
+## 📂 How It Works
 
 1. **Upload a file** (PDF, DOCX, or TXT).
-2. **Text and inline images** are extracted from the document.
-3. **OCR** is performed on each image to extract any text present.
-4. **LLM** generates structured metadata and detailed, markdown-formatted summaries.
-5. **Results** (metadata and image summaries) are displayed in a modern UI, with download options.
+2. **Extract text and images:** The app parses the document, extracting all text and any inline images.
+3. **OCR on images:** Each image is processed with Tesseract OCR to extract text.
+4. **Hierarchical Summarization:**  
+   - The document text is split into manageable chunks (approx. 700 tokens each).
+   - Each chunk is summarized using Groq Llama-3.3-70b-versatile.
+   - All summaries are combined; if the combined summary is too long, it is summarized again to ensure it fits within the token limit.
+5. **Metadata Generation:**  
+   - The final summary is passed to the Groq model to generate rich metadata in JSON format.
+6. **Image Summaries:**  
+   - Each image's OCR text is summarized separately and displayed alongside the image.
+7. **Download & View:**  
+   - View the metadata and summary in the app, and download the metadata as JSON.
 
 ---
 
-## 🎨 UI & Custom Styling
+## 🧠 Hierarchical Summarization
 
-- The app incorporates a custom style.css file to enhance the overall look and feel, ensuring a modern and cohesive user experience.
+**Hierarchical summarization** is a technique for summarizing large documents that exceed the token limits of language models. It works as follows:
 
-- Each image summary is presented in a visually distinct, styled box positioned beside its corresponding image, making it easy to compare visuals and insights at a glance.
+- The document is divided into smaller chunks, each within the model's token limit.
+- Each chunk is summarized individually, extracting key points, keywords, names, terminologies, dates, and numbers.
+- All chunk summaries are combined. If the combined summary still exceeds the token limit, it is summarized again.
+- This process ensures complete coverage of the document and produces a concise, information-rich summary suitable for further processing, such as metadata extraction.
 
-- Clean layouts, intuitive navigation, and subtle visual accents help users focus on the content and results, providing both clarity and aesthetic appeal throughout the application.
+**Advantages:**
+- Handles documents of any size.
+- Preserves important details from all sections.
+- Produces high-quality, concise summaries for downstream tasks.
 
----
-
-## 💡 Notes
-
-- Only images containing meaningful OCR-extracted text are displayed and summarized, ensuring that users see relevant insights without unnecessary clutter.
-
-- Each image summary begins with the phrase “The following image ...” to provide clear context and improve readability.
-
-- The app’s modular design and clean codebase make it straightforward to extend or customize features, allowing for easy adaptation to evolving user needs or integration with additional AI services.
+*Reference: [Hierarchical Summarization, ACL Anthology][4]*
 
 ---
 
-## 📂 Example `.env`
+## 📝 Example Metadata Output
 
-- GROQ_API_KEY=your_groq_api_key_here
+{
+"title": "Sample Document Title",
+"summary": "This document covers ... (detailed summary, 15-20 lines)",
+"keywords": "AI, metadata, summarization, OCR, PDF",
+"topics": "Artificial Intelligence, Document Processing",
+"author": "John Doe",
+"document_type": "Research Paper"
+}
 
-
----
-
-## 📜 License
-
-- This project is licensed under the MIT License.
-
-- You are free to use, copy, modify, and distribute this software for any purpose, with or without changes, as long as you include the original copyright notice.
-The software is provided “as is,” without warranty of any kind.
-
-- Copyright (c) 2025 Mars Club
 
 ---
 
-## 👤 Author
+## 🖼️ Image Summaries
 
-Samyak Mahapatra – [samyak_m@ece.iitr.ac.in](mailto:samyak_m@ece.iitr.ac.in)
+Each extracted image is displayed with:
+- The summarized OCR content (as markdown)
+- The raw OCR text (expandable)
+- The original image
 
 ---
 
-**Enjoy smarter document review and metadata extraction!**
+## 💻 Usage
+
+1. **Set up your environment:**
+   - Install dependencies (see above).
+   - Install Tesseract OCR and ensure it is on your system path.
+   - Create a `.env` file with your Groq API key:
+     ```
+     GROQ_API_KEY=your_groq_api_key_here
+     ```
+
+2. **Run the app:**
+    - streamlit run your_app_file.py
+
+
+3. **Upload a document and explore the results.**
+
+---
+
+## 📦 File Structure
+
+- `your_app_file.py` — Main Streamlit app.
+- `style.css` — (Optional) Custom CSS for app styling.
+- `.env` — Your Groq API key.
+
+---
+
+## ✨ Customization
+
+- **Model selection:** The app uses `llama-3.3-70b-versatile` by default for all summarization and metadata tasks. You can change the model string in the code if needed.
+- **Chunk size:** Adjust the `chunk_size` in `chunk_text_by_tokens` for different token limits.
+- **Prompt engineering:** Modify the prompts in `summarize_with_groq` or `generate_metadata` for different summary or metadata styles.
+
+---
+
+## 📚 References
+
+- [Hierarchical Summarization: Scaling Up Multi-Document Summarization](https://aclanthology.org/anthology-files/anthology-files/pdf/P/P14/P14-1085.xhtml)[4]
+- [PyPDF2 Documentation](https://pypdf2.readthedocs.io/)
+- [PyMuPDF Documentation](https://pymupdf.readthedocs.io/)
+- [Pytesseract Documentation](https://pypi.org/project/pytesseract/)
+- [Streamlit Documentation](https://docs.streamlit.io/)
+
+---
+
+## 📝 License
+
+This project is open-source and free to use for non-commercial and research purposes. Please see the LICENSE file for more details.
+
+---
+
+## 🙏 Acknowledgements
+
+- Meta for Llama 3 models
+- Groq for providing fast, scalable LLM inference
+- Open-source Python community for PDF, DOCX, and OCR tools
+
+---
+
