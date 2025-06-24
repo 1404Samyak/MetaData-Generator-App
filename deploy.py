@@ -12,18 +12,16 @@
 # import fitz
 # from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
+# from transformers import pipeline
 # from langchain_groq import ChatGroq
 # from langchain.schema import HumanMessage, SystemMessage
 
-# import nltk
-# nltk.download('punkt')
-# from sumy.parsers.plaintext import PlaintextParser
-# from sumy.nlp.tokenizers import Tokenizer
-# from sumy.summarizers.lex_rank import LexRankSummarizer
-
 # load_dotenv()
 # GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
 # pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+
+# summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 
 # def extract_text_and_inline_images(uploaded_file):
 #     suffix = Path(uploaded_file.name).suffix.lower()
@@ -86,19 +84,22 @@
 #         "ocr_texts_per_image": ocr_texts_per_image
 #     }
 
-# # --- Free extractive summarization using Sumy ---
-# def extractive_summary(text, num_sentences=20):
-#     parser = PlaintextParser.from_string(text, Tokenizer("english"))
-#     summarizer = LexRankSummarizer()
-#     summary_sentences = summarizer(parser.document, num_sentences)
-#     summary = " ".join(str(sentence) for sentence in summary_sentences)
-#     return summary
+# def summarize_pdf_text(full_text):
+#     chunk_size = 1000
+#     max_length = 200
+#     min_length = 30
+#     chunks = [full_text[i:i + chunk_size] for i in range(0, len(full_text), chunk_size)]
+
+#     try:
+#         summaries = summarizer(chunks, max_length=max_length, min_length=min_length, do_sample=False)
+#         summary = "\n".join([s['summary_text'] for s in summaries])
+#         return summary.strip()
+#     except Exception as e:
+#         st.error(f"HuggingFace summarization failed: {e}")
+#         return "Summarization failed due to an error."
 
 # def generate_metadata(summarized_text):
-#     llm = ChatGroq(
-#         model="llama3-8b-8192",
-#         api_key=GROQ_API_KEY
-#     )
+#     llm = ChatGroq(model="llama3-8b-8192", api_key=GROQ_API_KEY,max_tokens=8192)
 #     prompt = f"""
 # You are a professional and wonderful metadata assistant.
 
@@ -126,10 +127,7 @@
 # def summarize_ocr_text(ocr_text):
 #     if not ocr_text.strip():
 #         return "No OCR content found to summarize."
-#     llm = ChatGroq(
-#         model="llama3-8b-8192",
-#         api_key=GROQ_API_KEY
-#     )
+#     llm = ChatGroq(model="llama3-8b-8192", api_key=GROQ_API_KEY)
 #     prompt = (
 #         "You are a professional assistant. "
 #         "Start your response with 'The following image ...'. "
@@ -155,15 +153,18 @@
 #     except Exception as e:
 #         return f"OCR summarization failed: {e}"
 
-# # --- Streamlit UI ---
-# st.set_page_config(page_title="📄 AI Metadata Generator (RAG)", layout="wide")
-# st.title("📄 AI Metadata Generator with Extractive & LLM Summarization")
+# # Streamlit UI
+# st.set_page_config(page_title="📄 AI Metadata Generator (HuggingFace + Groq)", layout="wide")
+# st.title("📄 AI Metadata Generator with HuggingFace Summarization + Groq Metadata")
 
 # st.markdown("""
 # <div style='background-color:#f0f2f6; padding: 1em; border-radius: 10px; margin-bottom:1em;'>
-#     <h3>Upload a document (PDF, DOCX, or TXT) and generate structured metadata using free extractive summarization (Sumy) and Groq LLM! Inline images are also OCR'd and summarized.</h3>
+#     <h3>Upload a document (PDF, DOCX, or TXT) and generate structured metadata using HuggingFace summarization and Groq LLM. OCR images are summarized separately.</h3>
 # </div>
 # """, unsafe_allow_html=True)
+
+# with open("style.css") as f:
+#     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # uploaded_file = st.file_uploader("📤 Upload a document (PDF, DOCX, TXT)", type=["pdf", "docx", "txt"])
 
@@ -174,14 +175,12 @@
 #         images = raw["images"]
 #         ocr_texts_per_image = raw.get("ocr_texts_per_image", [])
 
-#     st.info("Generating extractive summary (free, local)...")
-#     with st.spinner("Summarizing document with Sumy..."):
-#         extractive_sum = extractive_summary(extracted_text, num_sentences=30)
-#     st.markdown(f"<div class='summary-box'>{extractive_sum}</div>", unsafe_allow_html=True)
+#     st.info("Summarizing the entire document for metadata extraction...")
+#     with st.spinner("Summarizing document with HuggingFace..."):
+#         summarized_text = summarize_pdf_text(extracted_text)
 
-#     st.info("Generating metadata from summary using Groq Llama...")
-#     with st.spinner("Generating metadata..."):
-#         metadata_output = generate_metadata(extractive_sum)
+#     with st.spinner("Generating metadata using Groq..."):
+#         metadata_output = generate_metadata(summarized_text)
 
 #     st.success("✅ Metadata generated successfully!")
 #     st.subheader("📌 Extracted Metadata")
@@ -193,6 +192,7 @@
 #         formatted_json = metadata_output
 
 #     st.markdown(f"""<div class='scrollable-json'><pre>{formatted_json}</pre></div>""", unsafe_allow_html=True)
+#     st.markdown(f"""<div class='scrollable-json'><pre>{summarized_text}</pre></div>""", unsafe_allow_html=True)
 #     st.download_button(
 #         label="⬇️ Download Metadata as JSON",
 #         data=formatted_json,
@@ -202,47 +202,29 @@
 
 #     if images:
 #         st.subheader("🖼️ Inline Image Summaries")
+#         ocr_summary_cache = {}
+
 #         for idx, img in enumerate(images):
 #             ocr_img_text = ocr_texts_per_image[idx] if idx < len(ocr_texts_per_image) else ""
-#             if ocr_img_text.strip():
+#             clean_ocr = ocr_img_text.strip()
+
+#             if clean_ocr:
+
+#                 if clean_ocr not in ocr_summary_cache:
+#                     with st.spinner(f"Summarizing OCR text for Image {idx+1}..."):
+#                         summary = summarize_ocr_text(clean_ocr)
+#                         ocr_summary_cache[clean_ocr] = summary
+#                 else:
+#                     summary = ocr_summary_cache[clean_ocr]
+
 #                 st.markdown(f"---\n### 🖼️ Image {idx+1}")
 #                 col1, col2 = st.columns([1, 2])
 #                 with col1:
 #                     st.image(img, caption=f"Image {idx+1}", use_container_width=True)
 #                 with col2:
-#                     with st.spinner(f"Summarizing OCR text for Image {idx+1}..."):
-#                         summary = summarize_ocr_text(ocr_img_text)
 #                     st.markdown(f"<div class='summary-box'>{summary}</div>", unsafe_allow_html=True)
 #                     with st.expander("Show Raw OCR Text"):
-#                         st.code(ocr_img_text)
+#                         st.code(clean_ocr)
+
 # else:
 #     st.info("📂 Please upload a file to get started.")
-
-# # --- Optional: Add CSS for summary boxes ---
-# st.markdown("""
-# <style>
-# .summary-box {
-#     background: linear-gradient(90deg, #f7fafc 0%, #e3e9f7 100%);
-#     border-left: 8px solid #4F8BF9;
-#     border-radius: 12px;
-#     padding: 1.5em 1.5em 1.5em 2em;
-#     margin: 1.5em 0;
-#     box-shadow: 0 2px 8px rgba(79,139,249,0.07);
-#     font-size: 1.13em;
-#     color: #22223b;
-#     font-family: 'Segoe UI', 'Roboto', sans-serif;
-#     transition: box-shadow 0.2s;
-# }
-# .summary-box:hover {
-#     box-shadow: 0 6px 24px rgba(79,139,249,0.12);
-# }
-# .scrollable-json {
-#     max-height: 300px;
-#     overflow-y: auto;
-#     background: #f4f6fb;
-#     border-radius: 8px;
-#     padding: 1em;
-#     margin-bottom: 1em;
-# }
-# </style>
-# """, unsafe_allow_html=True)

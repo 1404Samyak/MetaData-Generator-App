@@ -12,21 +12,17 @@ import io
 import fitz
 from docx.opc.constants import RELATIONSHIP_TYPE as RT
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.document_loaders import PyPDFLoader
-from langchain.chains.summarize import load_summarize_chain
-from langchain.prompts import PromptTemplate
 from langchain_groq import ChatGroq
 from langchain.schema import HumanMessage, SystemMessage
 
 load_dotenv()
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+
 pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
 def extract_text_and_inline_images(uploaded_file):
     suffix = Path(uploaded_file.name).suffix.lower()
     text = ""
-    ocr_text = ""
     image_list = []
     ocr_texts_per_image = []
 
@@ -52,7 +48,6 @@ def extract_text_and_inline_images(uploaded_file):
                     image_list.append(image)
                     ocr_img_text = pytesseract.image_to_string(image)
                     ocr_texts_per_image.append(ocr_img_text)
-            ocr_text = "\n".join(ocr_texts_per_image)
         elif suffix == ".docx":
             doc = DocxDocument(tmp_file_path)
             text = "\n".join([para.text for para in doc.paragraphs])
@@ -65,7 +60,6 @@ def extract_text_and_inline_images(uploaded_file):
                     image_list.append(image)
                     ocr_img_text = pytesseract.image_to_string(image)
                     ocr_texts_per_image.append(ocr_img_text)
-            ocr_text = "\n".join(ocr_texts_per_image)
         elif suffix == ".txt":
             with open(tmp_file_path, "r", encoding="utf-8") as f:
                 text = f.read()
@@ -79,57 +73,55 @@ def extract_text_and_inline_images(uploaded_file):
 
     return {
         "text": text.strip(),
-        "ocr_text": ocr_text.strip(),
         "images": image_list,
         "ocr_texts_per_image": ocr_texts_per_image
     }
 
+def chunk_text_by_tokens(text, max_tokens=700):
+    chunk_size = 2800
+    words = text.split()
+    chunks = []
+    current_chunk = []
+    current_length = 0
+    for word in words:
+        current_chunk.append(word)
+        current_length += len(word) + 1
+        if current_length >= chunk_size:
+            chunks.append(' '.join(current_chunk))
+            current_chunk = []
+            current_length = 0
+    if current_chunk:
+        chunks.append(' '.join(current_chunk))
+    return chunks
+
+def summarize_with_groq(text, api_key, model="llama-3.3-70b-versatile", max_tokens=700):
+    llm = ChatGroq(model=model, api_key=api_key, max_tokens=max_tokens)
+    prompt = f"Summarize the following text in detail,extract the meaningful sections of document, but keep the summary under {max_tokens} tokens:\n\n{text}"
+    response = llm([
+        SystemMessage(content="You are a professional summarization assistant."),
+        HumanMessage(content=prompt)
+    ])
+    return response.content.strip()
+
 def summarize_pdf_text(full_text):
-    chunk_size = 2000
-    chunk_overlap = 200
-
-    chunks_prompt = """
-Please summarize the following excerpt from the uploaded document. Focus on capturing the key points and main ideas clearly:
-Content: `{text}`
-Concise Summary:
-"""
-    map_prompt_template = PromptTemplate(input_variables=['text'], template=chunks_prompt)
-    final_prompt = '''
-Create a detailed and well-structured summary of the entire document. Start with a motivational title, followed by a brief introduction to set the context. Then provide the key points in a clear and concise format with sufficient detail:
-Document Content: {text}
-'''
-    final_prompt_template = PromptTemplate(input_variables=['text'], template=final_prompt)
-
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
-    docs = text_splitter.create_documents([full_text])
-
-    model = ChatGroq(model="llama-3.1-8b-instant", api_key=GROQ_API_KEY)
-
-    try:
-        summarize_chain = load_summarize_chain(
-            llm=model,
-            chain_type='map_reduce',
-            map_prompt=map_prompt_template,
-            combine_prompt=final_prompt_template,
-            verbose=True 
-        )
-        summary = summarize_chain.run(docs)
-        return summary.strip()
-    except Exception as e:
-        st.error(f"Summarization failed: {e}")
-        return "Summarization failed due to an error."
+    chunks = chunk_text_by_tokens(full_text, max_tokens=700)
+    summaries = []
+    for chunk in chunks:
+        summary = summarize_with_groq(chunk, api_key=GROQ_API_KEY, model="llama-3.3-70b-versatile", max_tokens=700)
+        summaries.append(summary)
+    combined_summary = "\n".join(summaries)
+    if len(summaries) > 1 or len(combined_summary.split()) > 700:
+        combined_summary = summarize_with_groq(combined_summary, api_key=GROQ_API_KEY, model="llama-3.3-70b-versatile", max_tokens=700)
+    return combined_summary.strip()
 
 def generate_metadata(summarized_text):
-    llm = ChatGroq(
-        model="llama3-8b-8192",
-        api_key=GROQ_API_KEY
-    )
+    llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=GROQ_API_KEY, max_tokens=700)
     prompt = f"""
 You are a professional and wonderful metadata assistant.
 
 Analyze the following document summary and return structured metadata in JSON format with fields:
 - title
-- summary (at least 10-15 lines in detail covering all important points)
+- summary (at least 15-20 lines in detail covering all important points)
 - keywords (comma-separated)
 - topics (broad subject categories)
 - author (if mentioned)
@@ -151,10 +143,7 @@ Document Summary:
 def summarize_ocr_text(ocr_text):
     if not ocr_text.strip():
         return "No OCR content found to summarize."
-    llm = ChatGroq(
-        model="llama3-8b-8192",
-        api_key=GROQ_API_KEY
-    )
+    llm = ChatGroq(model="llama-3.3-70b-versatile", api_key=GROQ_API_KEY)
     prompt = (
         "You are a professional assistant. "
         "Start your response with 'The following image ...'. "
@@ -180,12 +169,13 @@ def summarize_ocr_text(ocr_text):
     except Exception as e:
         return f"OCR summarization failed: {e}"
 
-st.set_page_config(page_title="📄 AI Metadata Generator (RAG)", layout="wide")
-st.title("📄 AI Metadata Generator with Summarization and Image Summaries")
+# Streamlit UI
+st.set_page_config(page_title="📄 AI Metadata Generator", layout="wide")
+st.title("📄 AI Metadata Generator with Groq")
 
 st.markdown("""
 <div style='background-color:#f0f2f6; padding: 1em; border-radius: 10px; margin-bottom:1em;'>
-    <h3>Upload a document (PDF, DOCX, or TXT) and generate structured metadata using document summarization! Inline images are also OCR'd and summarized.</h3>
+    <h3>Upload a document (PDF, DOCX, or TXT) and generate structured metadata using Groq Llama 3.3 70B Versatile. OCR images are summarized separately.</h3>
 </div>
 """, unsafe_allow_html=True)
 
@@ -202,10 +192,10 @@ if uploaded_file:
         ocr_texts_per_image = raw.get("ocr_texts_per_image", [])
 
     st.info("Summarizing the entire document for metadata extraction...")
-    with st.spinner("Summarizing document..."):
+    with st.spinner("Summarizing document with Groq Llama 3.3 70B Versatile..."):
         summarized_text = summarize_pdf_text(extracted_text)
 
-    with st.spinner("Generating metadata from summary using Groq Llama..."):
+    with st.spinner("Generating metadata using Groq..."):
         metadata_output = generate_metadata(summarized_text)
 
     st.success("✅ Metadata generated successfully!")
@@ -228,18 +218,27 @@ if uploaded_file:
 
     if images:
         st.subheader("🖼️ Inline Image Summaries")
+        ocr_summary_cache = {}
+
         for idx, img in enumerate(images):
             ocr_img_text = ocr_texts_per_image[idx] if idx < len(ocr_texts_per_image) else ""
-            if ocr_img_text.strip():
+            clean_ocr = ocr_img_text.strip()
+
+            if clean_ocr:
+                if clean_ocr not in ocr_summary_cache:
+                    with st.spinner(f"Summarizing OCR text for Image {idx+1}..."):
+                        summary = summarize_ocr_text(clean_ocr)
+                        ocr_summary_cache[clean_ocr] = summary
+                else:
+                    summary = ocr_summary_cache[clean_ocr]
                 st.markdown(f"---\n### 🖼️ Image {idx+1}")
                 col1, col2 = st.columns([1, 2])
                 with col1:
                     st.image(img, caption=f"Image {idx+1}", use_container_width=True)
                 with col2:
-                    with st.spinner(f"Summarizing OCR text for Image {idx+1}..."):
-                        summary = summarize_ocr_text(ocr_img_text)
                     st.markdown(f"<div class='summary-box'>{summary}</div>", unsafe_allow_html=True)
                     with st.expander("Show Raw OCR Text"):
-                        st.code(ocr_img_text)
+                        st.code(clean_ocr)
+
 else:
     st.info("📂 Please upload a file to get started.")
