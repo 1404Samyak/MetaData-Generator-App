@@ -21,7 +21,7 @@ A Streamlit app to **extract, summarize, and generate structured metadata** from
 
 Install all dependencies with:
 
-    - pip install streamlit python-dotenv PyPDF2 python-docx pytesseract pillow pymupdf langchain-groq
+   - pip install streamlit python-dotenv PyPDF2 python-docx pytesseract pillow pymupdf langchain langchain-groq
 
 
 **Additional requirements:**
@@ -44,7 +44,7 @@ Install all dependencies with:
 6. **Image Summaries:**  
    - Each image's OCR text is summarized separately and displayed alongside the image.
 7. **Download & View:**  
-   - View the metadata and summary in the app, and download the metadata as JSON.
+   - View the metadata and summary in the streamlit app, and download the metadata as JSON.
 
 ---
 
@@ -61,8 +61,6 @@ Install all dependencies with:
 - Handles documents of any size.
 - Preserves important details from all sections.
 - Produces high-quality, concise summaries for downstream tasks.
-
-*Reference: [Hierarchical Summarization, ACL Anthology][4]*
 
 ---
 
@@ -100,10 +98,10 @@ Each extracted image is displayed with:
      ```
 
 2. **Run the app:**
-    - streamlit run your_app_file.py
+   - streamlit run your_app_file.py
 
 
-3. **Upload a document and explore the results.**
+3. **Upload a document(PDF,TXT OR DOCX FORMAT) and explore the results.**
 
 ---
 
@@ -123,13 +121,20 @@ Each extracted image is displayed with:
 
 ---
 
-## 📚 References
+## ☁️ Deployment Notes (Streamlit Cloud & Tesseract)
 
-- [Hierarchical Summarization: Scaling Up Multi-Document Summarization](https://aclanthology.org/anthology-files/anthology-files/pdf/P/P14/P14-1085.xhtml)[4]
-- [PyPDF2 Documentation](https://pypdf2.readthedocs.io/)
-- [PyMuPDF Documentation](https://pymupdf.readthedocs.io/)
-- [Pytesseract Documentation](https://pypi.org/project/pytesseract/)
-- [Streamlit Documentation](https://docs.streamlit.io/)
+- **Tesseract OCR is not available on Streamlit Community Cloud.**  
+This means OCR features (image text extraction and summarization) will **not work** on Streamlit Cloud deployments. The rest of the app (text extraction, summarization, metadata) will work as expected.
+- **Workaround:** For full OCR functionality, run the app locally on your machine with Tesseract installed, or deploy to a cloud VM where you can install system packages.
+- **Unsupported image formats:** On Linux (including Streamlit Cloud), WMF images cannot be processed by Pillow. The app skips such images to prevent crashes.
+
+---
+
+## 🎥 Demo Video
+
+A short demonstration video (2 minutes) showing how to use the app is available here:
+
+**[Watch the demo video](https://drive.google.com/file/d/1IofNyNkADOQaViUs2y65HxwWS_m4t6hm/view?usp=sharing)**
 
 ---
 
@@ -139,11 +144,10 @@ This project is open-source and free to use for non-commercial and research purp
 
 ---
 
-## Acknowledgements
+## 🙏 Acknowledgements
 
 - Meta for Llama 3 models
 - Groq for providing fast, scalable LLM inference
 - Open-source Python community for PDF, DOCX, and OCR tools
 
 ---
-
