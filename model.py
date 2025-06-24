@@ -96,7 +96,13 @@ def chunk_text_by_tokens(text, max_tokens=700):
 
 def summarize_with_groq(text, api_key, model="llama-3.3-70b-versatile", max_tokens=700):
     llm = ChatGroq(model=model, api_key=api_key, max_tokens=max_tokens)
-    prompt = f"Summarize the following text in detail,extract the meaningful sections of document, but keep the summary under {max_tokens} tokens:\n\n{text}"
+    prompt = (
+    f"Summarize the following text in detail, extracting the most meaningful sections of the document. "
+    f"Your summary should include: important information, key points, keywords, author names, any mentioned names, "
+    f"specialized terminologies, dates, and numbers if present. "
+    f"Present the summary clearly and keep it under {max_tokens} tokens.\n\n"
+    f"Text:\n{text}"
+    )
     response = llm([
         SystemMessage(content="You are a professional summarization assistant."),
         HumanMessage(content=prompt)
@@ -126,7 +132,7 @@ Analyze the following document summary and return structured metadata in JSON fo
 - topics (broad subject categories)
 - author (if mentioned)
 - document_type
-
+-In json format make the keys bold to distinguish between keys and its values.
 Document Summary:
 {summarized_text}
 """
@@ -169,7 +175,6 @@ def summarize_ocr_text(ocr_text):
     except Exception as e:
         return f"OCR summarization failed: {e}"
 
-# Streamlit UI
 st.set_page_config(page_title="📄 AI Metadata Generator", layout="wide")
 st.title("📄 AI Metadata Generator with Groq")
 

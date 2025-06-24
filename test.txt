@@ -1,4 +1,4 @@
-nth_super_ugly_number:
+1)nth_super_ugly_number:
   problem:
     description: >
       Find the nth super ugly number, where a super ugly number is a positive integer 
@@ -54,4 +54,155 @@ nth_super_ugly_number:
     - Use of `1LL` ensures multiplication stays in long long to avoid integer overflow.
     - Final result is cast to int before returning, since the result fits in 32-bit int.
 
-AUTHOR: Dean Hujisen
+2)ountNumberOfLIS
+description: >
+  Computes the number of Longest Increasing Subsequences (LIS) in a given array using Dynamic Programming.
+  For each element, tracks both the length of the LIS ending there and how many such LIS exist.
+
+input:
+  - n: Number of elements in the array
+  - a: Array of integers of length n
+
+output:
+  - count: Total number of LIS of maximum length
+
+steps:
+  1. Read Input:
+    - Read `n` (number of elements)
+    - Read array `a` of length `n`
+
+  2. Initialize Arrays:
+    - dp[i] = Length of the LIS ending at index i
+    - c[i] = Number of LIS of length dp[i] ending at index i
+    - Both initialized to 1, since each element is a LIS of length 1
+
+  3. Fill dp and c using nested loops:
+    for i in 1 to n-1:
+      for j in 0 to i-1:
+        if a[j] < a[i]:
+          if dp[j] + 1 > dp[i]:
+            dp[i] = dp[j] + 1
+            c[i] = c[j]        # new longer LIS found, take over count
+          else if dp[j] + 1 == dp[i]:
+            c[i] += c[j]       # same-length LIS found, accumulate count
+
+    explanation: >
+      - For each a[i], check all previous elements a[j].
+      - If a[j] < a[i], a[i] can extend the LIS ending at a[j].
+      - Update dp[i] to the maximum LIS length, and c[i] to track how many LIS of that length end at i.
+
+  4. Find max LIS length:
+    - ans = max(dp[0 to n-1])
+
+  5. Count total number of LIS:
+    - For all i such that dp[i] == ans:
+        - Accumulate c[i] into `count`
+
+  6. Output:
+    - Print or return `count` as total number of LIS of maximum length
+
+time_complexity: O(n^2)
+space_complexity: O(n)
+
+variables:
+  - dp: vector<ll> of size n, stores LIS lengths
+  - c:  vector<ll> of size n, stores LIS counts
+  - ans: maximum LIS length
+  - count: total number of LIS of length ans
+
+example:
+  input:
+    n: 6
+    a: [1, 3, 5, 4, 7, 2]
+  dp: [1, 2, 3, 3, 4, 2]
+  c:  [1, 1, 1, 1, 2, 1]
+  max_length: 4
+  result: 2  # Two LIS of length 4: [1,3,4,7] and [1,3,5,7]
+
+notes:
+  - This algorithm only counts LIS, not reconstructs them.
+  - Can be extended to print all LIS using additional tracking structures.
+
+3)problem: Longest Common Subsequence (LCS)
+   function: longestCommonSubsequence(s, t)
+   dp_definition:
+     dp[i][j]: Length of LCS between s[0..i-1] and t[0..j-1]
+   recurrence:
+     if s[i-1] == t[j-1]:
+       dp[i][j] = 1 + dp[i-1][j-1]
+     else:
+       dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+   base_cases:
+     - dp[0][j] = 0 for all j (empty s)
+     - dp[i][0] = 0 for all i (empty t)
+   result: dp[n][m] (length of LCS between s and t)
+   time_complexity: O(n * m)
+   space_complexity: O(n * m)
+   use_case: Core building block for many string problems.
+
+---
+
+2. problem: Longest Palindromic Subsequence (LPS)
+   function: longestPalindromicSubsequence(s)
+   idea: >
+     A palindrome reads the same forwards and backwards. So the LPS of s is simply
+     the LCS of s and its reverse.
+   steps:
+     - Let rev = reverse(s)
+     - Compute LCS(s, rev)
+   reason: >
+     Characters that are common in the same order in both s and rev form a palindromic subsequence.
+   result: Length of the longest palindromic subsequence
+   example:
+     s: "bbabcbcab"
+     rev: "bacbcbabb"
+     lps_length: 7 (e.g., "babcbab")
+   time_complexity: O(n^2)
+
+---
+
+3. problem: Minimum Insertions to Make a String Palindromic
+   function: minInsertionsToMakePalindrome(s)
+   idea: >
+     The minimum number of insertions = s.length() - LPS(s)
+   reason: >
+     Once you know the longest palindromic subsequence, all the other characters must be matched by insertions.
+   formula: min_insertions = len(s) - longestPalindromicSubsequence(s)
+   example:
+     s: "abcd"
+     lps: 1 ("a", "b", "c", or "d")
+     result: 3 insertions (e.g., "dcbabcd")
+   time_complexity: O(n^2)
+
+---
+
+4. problem: Minimum Insertions to Convert s1 to s2
+   function: minInsertionsToConvert(s1, s2)
+   idea: >
+     Use LCS(s1, s2) to determine common part.
+     The number of insertions required = len(s2) - LCS(s1, s2)
+   reason: >
+     To make s1 into s2, insert the characters from s2 that are not in the LCS.
+   formula: insertions = len(s2) - LCS(s1, s2)
+   example:
+     s1: "abc"
+     s2: "aebdc"
+     LCS: "abc" → length 3
+     result: 2 insertions ("e" and "d")
+   time_complexity: O(n * m)
+
+---
+
+shared_base:
+  core_dp: LCS (Longest Common Subsequence)
+  recurrence:
+    if s[i-1] == t[j-1]:
+      dp[i][j] = 1 + dp[i-1][j-1]
+    else:
+      dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+  usage: >
+    All the above problems reuse this LCS DP as their base, either by comparing a string with its reverse
+    or comparing two different strings to determine how many characters are common or missing.
+
+AUTHOR: Samyak Mahapatra
+
