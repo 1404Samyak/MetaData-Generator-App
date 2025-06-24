@@ -135,11 +135,11 @@ Each extracted image is displayed with:
 
 ## 📝 License
 
-This project is open-source and free to use for non-commercial and research purposes. Please see the LICENSE file for more details.
+This project is open-source and free to use for non-commercial and research purposes.
 
 ---
 
-## 🙏 Acknowledgements
+## Acknowledgements
 
 - Meta for Llama 3 models
 - Groq for providing fast, scalable LLM inference
