@@ -132,7 +132,6 @@ Analyze the following document summary and return structured metadata in JSON fo
 - topics (broad subject categories)
 - author (if mentioned)
 - document_type
--In JSON format write the keys in black and its corresponding text in white to distinguish properly.
 Document Summary:
 {summarized_text}
 """
