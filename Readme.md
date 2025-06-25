@@ -147,7 +147,7 @@ deployment_notes:
 
 A short demonstration video (2 minutes) showing how to use the app is available here:
 
-**[Watch the demo video](https://drive.google.com/file/d/1IofNyNkADOQaViUs2y65HxwWS_m4t6hm/view?usp=sharing)**
+**[Watch the demo video](https://drive.google.com/file/d/1FxASHIq49faGn7q6HE8Mnyu7RLxfhUCT/view?usp=sharing)**
 
 ---
 
