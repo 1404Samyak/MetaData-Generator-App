@@ -1,9 +1,0 @@
-services:
-  - type: web
-    name: metadata-generator-app
-    env: python
-    buildCommand: "./build.sh && pip install -r requirements.txt"
-    startCommand: "streamlit run model.py"  
-    envVars:
-      - key: PYTHONUNBUFFERED
-        value: "1"
