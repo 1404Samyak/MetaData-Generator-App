@@ -123,7 +123,6 @@ Each extracted image is displayed with:
 
 ## ☁️ Deployment Notes (Streamlit Cloud & Tesseract)
 
-deployment_notes:
   - **Tesseract OCR is not available on Streamlit Community Cloud.**  
      This means OCR features (image text extraction and summarization) will **not work** on Streamlit Cloud deployments.  
      The rest of the app (text extraction, summarization, metadata generation) will continue to work as expected."
