@@ -123,10 +123,23 @@ Each extracted image is displayed with:
 
 ## ☁️ Deployment Notes (Streamlit Cloud & Tesseract)
 
-- **Tesseract OCR is not available on Streamlit Community Cloud.**  
-This means OCR features (image text extraction and summarization) will **not work** on Streamlit Cloud deployments. The rest of the app (text extraction, summarization, metadata) will work as expected.
-- **Workaround:** For full OCR functionality, run the app locally on your machine with Tesseract installed, or deploy to a cloud VM where you can install system packages.
-- **Unsupported image formats:** On Linux (including Streamlit Cloud), WMF images cannot be processed by Pillow. The app skips such images to prevent crashes.
+deployment_notes:
+  - "**Tesseract OCR is not available on Streamlit Community Cloud.**  
+     This means OCR features (image text extraction and summarization) will **not work** on Streamlit Cloud deployments.  
+     The rest of the app (text extraction, summarization, metadata generation) will continue to work as expected."
+
+  - "**Workaround:** For full OCR functionality, run the app locally on your machine with Tesseract installed,  
+     or deploy to a cloud VM (like Render, Railway, or EC2) where you can install system-level packages."
+
+  - "**Tesseract path setting limitation:**  
+     The Tesseract path (`tesseract_cmd`) must be manually set in the code, and it varies by platform (Windows vs. Linux).  
+     On platforms like Streamlit Cloud, you cannot control the Tesseract installation path — this results in `TesseractNotFoundError`  
+     even if the Python package is available."
+
+  - "**Unsupported image formats:**  
+     On Linux (including Streamlit Cloud), WMF/EMF image formats cannot be processed by Pillow.  
+     These are silently skipped to prevent application crashes."
+
 
 ---
 
